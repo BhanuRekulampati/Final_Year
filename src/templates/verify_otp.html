@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP - AI Decision Maker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: #f4f6f8; 
+            min-height: 100vh; 
+            padding: 40px 20px; 
+        }
+        .container { 
+            max-width: 400px; 
+            margin: 0 auto; 
+            background: #fff; 
+            padding: 32px 28px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 16px rgba(0,0,0,0.07); 
+        }
+        h1 { 
+            color: #253858; 
+            text-align: center; 
+            margin-bottom: 28px; 
+            font-size: 2em; 
+            font-weight: 600; 
+        }
+        .otp-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        .form-group { 
+            margin-bottom: 22px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 7px; 
+            color: #42526e; 
+            font-weight: 500; 
+        }
+        input { 
+            width: 100%; 
+            padding: 11px; 
+            border: 1.5px solid #d1d5db; 
+            border-radius: 6px; 
+            font-size: 15px; 
+            background: #f9fafb; 
+            transition: border-color 0.2s; 
+        }
+        input:focus { 
+            border-color: #5b9bd5; 
+            outline: none; 
+        }
+        button { 
+            background: #4caf50; 
+            color: #fff; 
+            padding: 11px 0; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 500; 
+            width: 100%; 
+            transition: background 0.2s; 
+        }
+        button:hover { 
+            background: #388e3c; 
+        }
+        .resend-btn {
+            background: #ff9800;
+            margin-top: 10px;
+        }
+        .resend-btn:hover {
+            background: #f57c00;
+        }
+        .flash { 
+            margin-bottom: 18px; 
+            padding: 10px 16px; 
+            border-radius: 6px; 
+            font-size: 15px; 
+        }
+        .flash-info {
+            background: #e3f2fd; 
+            color: #1976d2; 
+            border-left: 4px solid #2196f3; 
+        }
+        .flash-danger {
+            background: #ffebee; 
+            color: #c62828; 
+            border-left: 4px solid #f44336; 
+        }
+        .flash-success {
+            background: #e8f5e8; 
+            color: #2e7d32; 
+            border-left: 4px solid #4caf50; 
+        }
+        @media (max-width: 600px) { 
+            .container { 
+                padding: 16px 6px; 
+            } 
+            h1 { 
+                font-size: 1.3em; 
+            } 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Verify OTP</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        <div class="otp-info">
+            <h3 style="margin: 0 0 10px 0; color: #1976d2;">📧 Check Your Email</h3>
+            <p style="margin: 0; color: #1976d2; font-size: 14px;">
+                We've sent a 6-digit verification code to your email address. 
+                Please enter it below to complete your registration.
+            </p>
+            <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-top: 10px; border-left: 3px solid #ffc107;">
+                <p style="margin: 0; color: #856404; font-size: 12px;">
+                    <strong>💡 Demo Mode:</strong> Check the console/terminal for the OTP code.
+                </p>
+            </div>
+        </div>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="otp">Enter OTP Code</label>
+                <input type="text" id="otp" name="otp" placeholder="Enter 6-digit code" 
+                       maxlength="6" pattern="[0-9]{6}" required 
+                       style="text-align: center; font-size: 18px; letter-spacing: 2px;">
+            </div>
+            <button type="submit">✅ Verify & Complete Registration</button>
+        </form>
+        
+        <form method="POST" action="{{ url_for('resend_otp') }}" style="margin-top: 15px;">
+            <button type="submit" class="resend-btn">🔄 Resend OTP</button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+            <p>Didn't receive the code? Check your spam folder or click "Resend OTP"</p>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-focus on OTP input
+        document.getElementById('otp').focus();
+        
+        // Auto-submit when 6 digits are entered
+        document.getElementById('otp').addEventListener('input', function() {
+            if (this.value.length === 6) {
+                this.form.submit();
+            }
+        });
+    </script>
+</body>
+</html> 

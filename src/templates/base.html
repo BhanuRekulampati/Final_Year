@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Decision Platform{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f4f6f8; margin: 0; }
+        .navbar { background: #253858; color: #fff; padding: 0 24px; display: flex; align-items: center; height: 56px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .navbar .logo { font-weight: 600; font-size: 1.2em; letter-spacing: 1px; margin-right: 32px; }
+        .navbar a { color: #fff; text-decoration: none; margin: 0 14px; font-weight: 500; transition: color 0.2s; }
+        .navbar a:hover { color: #5b9bd5; }
+        .navbar .spacer { flex: 1; }
+        .navbar .user { font-size: 0.98em; margin-right: 10px; }
+        .navbar .fa-user { margin-right: 5px; }
+        .content { padding: 36px 0; min-height: 80vh; }
+        .footer { text-align: center; color: #888; font-size: 0.95em; padding: 18px 0 10px 0; }
+        @media (max-width: 700px) { .navbar { flex-direction: column; height: auto; align-items: flex-start; } .navbar .logo { margin-bottom: 8px; } .content { padding: 18px 0; } }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="navbar">
+        <span class="logo"><i class="fa-solid fa-brain"></i> AI Decision Platform</span>
+        <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-table-columns"></i> Dashboard</a>
+        <a href="{{ url_for('index') }}"><i class="fa-solid fa-gavel"></i> Decision Maker</a>
+        <a href="{{ url_for('admission') }}"><i class="fa-solid fa-user-graduate"></i> College Admission Advisor</a>
+        <span class="spacer"></span>
+        <span class="user"><i class="fa-solid fa-user"></i> {{ session['username'] }}</span>
+        <a href="{{ url_for('logout') }}"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+    </div>
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+    <div class="footer">
+        &copy; {{ 2025 }} Your Name &mdash; B.Tech Final Year Project
+    </div>
+</body>
+</html> 

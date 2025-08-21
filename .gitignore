@@ -1,0 +1,34 @@
+﻿# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+.env
+.venv/
+venv/
+ENV/
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Databases
+*.sqlite3
+*.db
+*.db-journal
+src/users.db
+users.db
+
+# Instance and uploads
+instance/
+uploads/
+
+# Misc
+*.pid
+
+# Data (optional)
+data/

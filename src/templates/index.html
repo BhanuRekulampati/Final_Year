@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Decision Maker | AI Decision Platform{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1>AI Decision Maker</h1>
+        <form method="POST">
+            <div class="form-group">
+                <label for="cost">Cost ($)</label>
+                <input type="number" id="cost" name="cost" placeholder="Enter cost amount" required>
+            </div>
+            <div class="form-group">
+                <label for="benefit">Benefit ($)</label>
+                <input type="number" id="benefit" name="benefit" placeholder="Enter expected benefit" required>
+            </div>
+            <div class="form-group">
+                <label for="risk">Risk Level (1-5)</label>
+                <input type="number" id="risk" name="risk" min="1" max="5" placeholder="Enter risk level" required>
+            </div>
+            <div class="form-group">
+                <label for="time_investment">Time Investment (days)</label>
+                <input type="number" id="time_investment" name="time_investment" placeholder="Enter time in days" required>
+            </div>
+            <button type="submit">Get AI Decision</button>
+        </form>
+        {% if result %}
+        <div class="result {{ 'accept' if result.decision == 1 else 'reject' }}">
+            <h2>Decision: {{ 'Accept' if result.decision == 1 else 'Reject' }}</h2>
+            <p>Confidence Level: {{ "%.2f"|format(result.confidence * 100) }}%</p>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}

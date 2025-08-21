@@ -1,0 +1,1197 @@
+{% extends 'base.html' %}
+{% block title %}All Colleges in Telangana | AI Decision Platform{% endblock %}
+{% block content %}
+<style>
+    .college-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-left: 4px solid #3498db;
+        transition: transform 0.3s ease;
+    }
+    .college-card:hover {
+        transform: translateY(-2px);
+    }
+    .tier-section {
+        margin-bottom: 40px;
+    }
+    .tier-header {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 1.3em;
+        font-weight: 600;
+    }
+    .college-name {
+        font-size: 1.2em;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+    .college-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    .detail-item {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 6px;
+        border-left: 3px solid #27ae60;
+    }
+    .detail-label {
+        font-weight: 600;
+        color: #34495e;
+        font-size: 0.9em;
+    }
+    .detail-value {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+    .stream-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .stream-tag {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+    }
+    .womens-college {
+        border-left-color: #e91e63;
+        background: linear-gradient(135deg, #fff, #fce4ec);
+    }
+    .womens-badge {
+        background: #e91e63;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+    .stats-summary {
+        background: #e8f5e8;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border-left: 4px solid #27ae60;
+    }
+    .caste-requirements {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+    .caste-requirements h4 {
+        color: #856404;
+        margin-bottom: 10px;
+        font-size: 1em;
+    }
+    .caste-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .caste-item {
+        background: #fff;
+        padding: 8px;
+        border-radius: 6px;
+        border-left: 3px solid #f39c12;
+        font-size: 0.85em;
+    }
+    .caste-label {
+        font-weight: 600;
+        color: #856404;
+    }
+    .caste-value {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+    .gender-info {
+        background: #e8f4fd;
+        border: 1px solid #bee5eb;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 0.9em;
+    }
+    .gender-info .detail-label {
+        color: #0c5460;
+    }
+    .search-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .search-input {
+        width: 100%;
+        padding: 15px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .search-input:focus {
+        outline: none;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+    .search-placeholder {
+        color: #7f8c8d;
+        font-style: italic;
+    }
+    .search-results {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+        border-left: 4px solid #3498db;
+    }
+    .no-results {
+        text-align: center;
+        padding: 30px;
+        color: #7f8c8d;
+        font-style: italic;
+    }
+    .hidden {
+        display: none !important;
+    }
+    .highlight {
+        background-color: #fff3cd;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-weight: 600;
+    }
+    .search-options {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        z-index: 1000;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 20px;
+        margin-top: 5px;
+    }
+    .search-category {
+        margin-bottom: 20px;
+    }
+    .search-category:last-child {
+        margin-bottom: 0;
+    }
+    .option-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .option-btn {
+        background: #e3f2fd;
+        color: #1976d2;
+        border: 2px solid #bbdefb;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    .option-btn:hover {
+        background: #1976d2;
+        color: white;
+        border-color: #1976d2;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+    }
+    .option-btn:active {
+        transform: translateY(0);
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container" style="max-width: 1200px;">
+    <h1 style="text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 2.5em;">🏫 All Colleges in Telangana</h1>
+    
+    <!-- Navigation Tabs -->
+    <div style="display: flex; justify-content: center; margin-bottom: 30px; background: #f8f9fa; padding: 10px; border-radius: 12px;">
+        <a href="{{ url_for('admission') }}" style="background: #fff; color: #2c3e50; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 0 10px; border: 2px solid #3498db; transition: all 0.3s ease;">
+            🚀 Get Admission Advice
+        </a>
+        <a href="{{ url_for('colleges') }}" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 0 10px; box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);">
+            🏫 Browse All Colleges
+        </a>
+    </div>
+
+    <!-- Search Functionality -->
+    <div class="search-container">
+        <h3 style="color: white; margin-bottom: 15px; text-align: center;">🔍 Search Courses & Streams</h3>
+        <div style="position: relative;">
+            <input type="text" id="courseSearch" class="search-input" placeholder="Search for courses, streams, or sub-courses (e.g., CSE, Engineering, BSc Physics, Medical, Commerce...)" autocomplete="off">
+            <button id="clearSearch" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #7f8c8d; cursor: pointer; display: none; font-size: 18px;" onclick="clearSearch()">×</button>
+            <div id="searchOptions" class="search-options" style="display: none;">
+                <div class="search-category">
+                    <h5 style="color: #2c3e50; margin-bottom: 8px; font-size: 0.9em;">🎓 Popular Streams</h5>
+                    <div class="option-buttons">
+                        <button class="option-btn" data-search="Engineering">Engineering</button>
+                        <button class="option-btn" data-search="Medical">Medical</button>
+                        <button class="option-btn" data-search="Commerce">Commerce</button>
+                        <button class="option-btn" data-search="Arts">Arts</button>
+                        <button class="option-btn" data-search="Science">Science</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="searchResults" class="search-results" style="display: none;">
+            <div id="searchResultsContent"></div>
+        </div>
+    </div>
+    
+    <!-- Summary Statistics -->
+    <div class="stats-summary">
+        <h2 style="color: #27ae60; margin-bottom: 15px;">📊 College Statistics</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div>
+                <h3 style="color: #2c3e50; margin-bottom: 5px;">{{ total_colleges }}</h3>
+                <p style="color: #7f8c8d; margin: 0;">Total Colleges</p>
+            </div>
+            <div>
+                <h3 style="color: #2c3e50; margin-bottom: 5px;">{{ top_tier|length }}</h3>
+                <p style="color: #7f8c8d; margin: 0;">Top Tier (Rank 1-5000)</p>
+            </div>
+            <div>
+                <h3 style="color: #2c3e50; margin-bottom: 5px;">{{ mid_tier|length }}</h3>
+                <p style="color: #7f8c8d; margin: 0;">Mid Tier (Rank 5000-15000)</p>
+            </div>
+            <div>
+                <h3 style="color: #2c3e50; margin-bottom: 5px;">{{ lower_tier|length }}</h3>
+                <p style="color: #7f8c8d; margin: 0;">Lower Tier (Rank 15000+)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Tier Colleges -->
+    <div class="tier-section">
+        <div class="accordion" id="tierAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTopTier">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTopTier" aria-expanded="false" aria-controls="collapseTopTier">
+                        🏆 Top Tier Colleges (Rank 1-5000) - Click to View
+                    </button>
+                </h2>
+                <div id="collapseTopTier" class="accordion-collapse collapse" aria-labelledby="headingTopTier" data-bs-parent="#tierAccordion">
+                    <div class="accordion-body">
+                        {% for college in top_tier %}
+                        <div class="college-card {% if 'Women' in college.name %}womens-college{% endif %}">
+                            <div class="college-name">
+                                {{ college.name }}
+                                {% if 'Women' in college.name %}
+                                <span class="womens-badge">👩 Women Only</span>
+                                {% endif %}
+                            </div>
+                            <div class="college-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">📍 Location</div>
+                                    <div class="detail-value">{{ college.location }}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">💰 Avg Package</div>
+                                    <div class="detail-value">{{ college.avg_package }}</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <h4 style="color: #2c3e50; margin-bottom: 10px; font-size: 1em;">📚 Streams (Click to view sub-courses & requirements)</h4>
+                                <div class="accordion" id="accordion-{{ loop.index }}">
+                                    {% for stream_name, stream_data in college.streams.items() %}
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="heading-{{ loop.index }}-{{ loop.index0 }}">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}-{{ loop.index0 }}" aria-expanded="false" aria-controls="collapse-{{ loop.index }}-{{ loop.index0 }}">
+                                                {{ stream_name }}
+                                            </button>
+                                        </h2>
+                                        <div id="collapse-{{ loop.index }}-{{ loop.index0 }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ loop.index }}-{{ loop.index0 }}" data-bs-parent="#accordion-{{ loop.index }}">
+                                            <div class="accordion-body">
+                                                {% if stream_data is mapping and stream_data.values()|first is mapping %}
+                                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                                                    {% for sub_name, sub_data in stream_data.items() %}
+                                                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db; margin-bottom: 10px;">
+                                                            <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 1.1em;">{{ sub_name }}</div>
+                                                            <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 12px;">
+                                                                <div style="margin-bottom: 5px;">🎯 Min Rank: {{ sub_data.min_rank }}</div>
+                                                                <div style="margin-bottom: 5px;">📊 Min Marks: {{ sub_data.min_marks }}/160</div>
+                                                                <div style="margin-bottom: 10px;">📈 Placement: {{ sub_data.placement }}</div>
+                                                            </div>
+                                                            <!-- Caste-specific requirements for this sub-course -->
+                                                            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 10px; margin-top: 10px;">
+                                                                <div style="font-weight: 600; color: #856404; margin-bottom: 8px; font-size: 0.9em;">🎯 Caste-wise Requirements for {{ sub_name }}:</div>
+                                                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 0.8em;">
+                                                                    <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                        <div style="font-weight: 600; color: #856404;">OC</div>
+                                                                        <div style="color: #2c3e50;">Rank: {{ sub_data.min_rank }}<br>Marks: {{ sub_data.min_marks }}/160</div>
+                                                                    </div>
+                                                                    <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                        <div style="font-weight: 600; color: #856404;">BC</div>
+                                                                        <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 1.2)|int }}<br>Marks: {{ sub_data.min_marks - 2 }}/160</div>
+                                                                    </div>
+                                                                    <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                        <div style="font-weight: 600; color: #856404;">SC</div>
+                                                                        <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 1.5)|int }}<br>Marks: {{ sub_data.min_marks - 5 }}/160</div>
+                                                                    </div>
+                                                                    <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                        <div style="font-weight: 600; color: #856404;">ST</div>
+                                                                        <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 2.0)|int }}<br>Marks: {{ sub_data.min_marks - 8 }}/160</div>
+                                                                    </div>
+                                                                    <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                        <div style="font-weight: 600; color: #856404;">EWS</div>
+                                                                        <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 1.3)|int }}<br>Marks: {{ sub_data.min_marks - 3 }}/160</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                    <!-- For streams without sub-courses, show as before -->
+                                                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
+                                                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 1.1em;">{{ stream_name }}</div>
+                                                        <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 12px;">
+                                                            <div style="margin-bottom: 5px;">🎯 Min Rank: {{ stream_data.min_rank }}</div>
+                                                            <div style="margin-bottom: 5px;">📊 Min Marks: {{ stream_data.min_marks }}/160</div>
+                                                            <div style="margin-bottom: 10px;">📈 Placement: {{ stream_data.placement }}</div>
+                                                        </div>
+                                                        <!-- Caste-specific requirements for this stream -->
+                                                        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 10px; margin-top: 10px;">
+                                                            <div style="font-weight: 600; color: #856404; margin-bottom: 8px; font-size: 0.9em;">🎯 Caste-wise Requirements for {{ stream_name }}:</div>
+                                                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 0.8em;">
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">OC</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ stream_data.min_rank }}<br>Marks: {{ stream_data.min_marks }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">BC</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 1.2)|int }}<br>Marks: {{ stream_data.min_marks - 2 }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">SC</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 1.5)|int }}<br>Marks: {{ stream_data.min_marks - 5 }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">ST</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 2.0)|int }}<br>Marks: {{ stream_data.min_marks - 8 }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">EWS</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 1.3)|int }}<br>Marks: {{ stream_data.min_marks - 3 }}/160</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- Gender Information -->
+                            <div class="gender-info">
+                                <div class="detail-label">👥 Gender Eligibility:</div>
+                                <div class="detail-value">
+                                    {% if 'Women' in college.name %}
+                                        <strong>Women Only</strong> - Only female students can apply
+                                    {% else %}
+                                        <strong>All Genders</strong> - Open to male, female, and other genders
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="stream-tags">
+                                {% for stream_name in college.streams.keys() %}
+                                <span class="stream-tag">{{ stream_name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mid Tier Colleges -->
+    <div class="tier-section">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingMidTier">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMidTier" aria-expanded="false" aria-controls="collapseMidTier">
+                    📚 Mid Tier Colleges (Rank 5000-15000) - Click to View
+                </button>
+            </h2>
+            <div id="collapseMidTier" class="accordion-collapse collapse" aria-labelledby="headingMidTier" data-bs-parent="#tierAccordion">
+                <div class="accordion-body">
+                    {% for college in mid_tier %}
+                    <div class="college-card {% if 'Women' in college.name %}womens-college{% endif %}">
+                        <div class="college-name">
+                            {{ college.name }}
+                            {% if 'Women' in college.name %}
+                            <span class="womens-badge">👩 Women Only</span>
+                            {% endif %}
+                        </div>
+                        <div class="college-details">
+                            <div class="detail-item">
+                                <div class="detail-label">📍 Location</div>
+                                <div class="detail-value">{{ college.location }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">💰 Avg Package</div>
+                                <div class="detail-value">{{ college.avg_package }}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <h4 style="color: #2c3e50; margin-bottom: 10px; font-size: 1em;">📚 Streams (Click to view sub-courses & requirements)</h4>
+                            <div class="accordion" id="accordion-mid-{{ loop.index }}">
+                                {% for stream_name, stream_data in college.streams.items() %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading-mid-{{ loop.index }}-{{ loop.index0 }}">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-mid-{{ loop.index }}-{{ loop.index0 }}" aria-expanded="false" aria-controls="collapse-mid-{{ loop.index }}-{{ loop.index0 }}">
+                                            {{ stream_name }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse-mid-{{ loop.index }}-{{ loop.index0 }}" class="accordion-collapse collapse" aria-labelledby="heading-mid-{{ loop.index }}-{{ loop.index0 }}" data-bs-parent="#accordion-mid-{{ loop.index }}">
+                                        <div class="accordion-body">
+                                            {% if stream_data is mapping and stream_data.values()|first is mapping %}
+                                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                                                {% for sub_name, sub_data in stream_data.items() %}
+                                                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db; margin-bottom: 10px;">
+                                                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 1.1em;">{{ sub_name }}</div>
+                                                        <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 12px;">
+                                                            <div style="margin-bottom: 5px;">🎯 Min Rank: {{ sub_data.min_rank }}</div>
+                                                            <div style="margin-bottom: 5px;">📊 Min Marks: {{ sub_data.min_marks }}/160</div>
+                                                            <div style="margin-bottom: 10px;">📈 Placement: {{ sub_data.placement }}</div>
+                                                        </div>
+                                                        <!-- Caste-specific requirements for this sub-course -->
+                                                        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 10px; margin-top: 10px;">
+                                                            <div style="font-weight: 600; color: #856404; margin-bottom: 8px; font-size: 0.9em;">🎯 Caste-wise Requirements for {{ sub_name }}:</div>
+                                                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 0.8em;">
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">OC</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ sub_data.min_rank }}<br>Marks: {{ sub_data.min_marks }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">BC</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 1.2)|int }}<br>Marks: {{ sub_data.min_marks - 2 }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">SC</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 1.5)|int }}<br>Marks: {{ sub_data.min_marks - 5 }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">ST</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 2.0)|int }}<br>Marks: {{ sub_data.min_marks - 8 }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">EWS</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 1.3)|int }}<br>Marks: {{ sub_data.min_marks - 3 }}/160</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <!-- For streams without sub-courses, show as before -->
+                                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
+                                                    <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 1.1em;">{{ stream_name }}</div>
+                                                    <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 12px;">
+                                                        <div style="margin-bottom: 5px;">🎯 Min Rank: {{ stream_data.min_rank }}</div>
+                                                        <div style="margin-bottom: 5px;">📊 Min Marks: {{ stream_data.min_marks }}/160</div>
+                                                        <div style="margin-bottom: 10px;">📈 Placement: {{ stream_data.placement }}</div>
+                                                    </div>
+                                                    <!-- Caste-specific requirements for this stream -->
+                                                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 10px; margin-top: 10px;">
+                                                        <div style="font-weight: 600; color: #856404; margin-bottom: 8px; font-size: 0.9em;">🎯 Caste-wise Requirements for {{ stream_name }}:</div>
+                                                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 0.8em;">
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">OC</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ stream_data.min_rank }}<br>Marks: {{ stream_data.min_marks }}/160</div>
+                                                            </div>
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">BC</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 1.2)|int }}<br>Marks: {{ stream_data.min_marks - 2 }}/160</div>
+                                                            </div>
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">SC</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 1.5)|int }}<br>Marks: {{ stream_data.min_marks - 5 }}/160</div>
+                                                            </div>
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">ST</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 2.0)|int }}<br>Marks: {{ stream_data.min_marks - 8 }}/160</div>
+                                                            </div>
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">EWS</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 1.3)|int }}<br>Marks: {{ stream_data.min_marks - 3 }}/160</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- Gender Information -->
+                        <div class="gender-info">
+                            <div class="detail-label">👥 Gender Eligibility:</div>
+                            <div class="detail-value">
+                                {% if 'Women' in college.name %}
+                                    <strong>Women Only</strong> - Only female students can apply
+                                {% else %}
+                                    <strong>All Genders</strong> - Open to male, female, and other genders
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="stream-tags">
+                            {% for stream_name in college.streams.keys() %}
+                            <span class="stream-tag">{{ stream_name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lower Tier Colleges -->
+    <div class="tier-section">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingLowerTier">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLowerTier" aria-expanded="false" aria-controls="collapseLowerTier">
+                    🎓 Lower Tier Colleges (Rank 15000+) - Click to View
+                </button>
+            </h2>
+            <div id="collapseLowerTier" class="accordion-collapse collapse" aria-labelledby="headingLowerTier" data-bs-parent="#tierAccordion">
+                <div class="accordion-body">
+                    {% for college in lower_tier %}
+                    <div class="college-card {% if 'Women' in college.name %}womens-college{% endif %}">
+                        <div class="college-name">
+                            {{ college.name }}
+                            {% if 'Women' in college.name %}
+                            <span class="womens-badge">👩 Women Only</span>
+                            {% endif %}
+                        </div>
+                        <div class="college-details">
+                            <div class="detail-item">
+                                <div class="detail-label">📍 Location</div>
+                                <div class="detail-value">{{ college.location }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">💰 Avg Package</div>
+                                <div class="detail-value">{{ college.avg_package }}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <h4 style="color: #2c3e50; margin-bottom: 10px; font-size: 1em;">📚 Streams (Click to view sub-courses & requirements)</h4>
+                            <div class="accordion" id="accordion-lower-{{ loop.index }}">
+                                {% for stream_name, stream_data in college.streams.items() %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading-lower-{{ loop.index }}-{{ loop.index0 }}">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-lower-{{ loop.index }}-{{ loop.index0 }}" aria-expanded="false" aria-controls="collapse-lower-{{ loop.index }}-{{ loop.index0 }}">
+                                            {{ stream_name }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse-lower-{{ loop.index }}-{{ loop.index0 }}" class="accordion-collapse collapse" aria-labelledby="heading-lower-{{ loop.index }}-{{ loop.index0 }}" data-bs-parent="#accordion-lower-{{ loop.index }}">
+                                        <div class="accordion-body">
+                                            {% if stream_data is mapping and stream_data.values()|first is mapping %}
+                                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+                                                {% for sub_name, sub_data in stream_data.items() %}
+                                                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db; margin-bottom: 10px;">
+                                                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 1.1em;">{{ sub_name }}</div>
+                                                        <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 12px;">
+                                                            <div style="margin-bottom: 5px;">🎯 Min Rank: {{ sub_data.min_rank }}</div>
+                                                            <div style="margin-bottom: 5px;">📊 Min Marks: {{ sub_data.min_marks }}/160</div>
+                                                            <div style="margin-bottom: 10px;">📈 Placement: {{ sub_data.placement }}</div>
+                                                        </div>
+                                                        <!-- Caste-specific requirements for this sub-course -->
+                                                        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 10px; margin-top: 10px;">
+                                                            <div style="font-weight: 600; color: #856404; margin-bottom: 8px; font-size: 0.9em;">🎯 Caste-wise Requirements for {{ sub_name }}:</div>
+                                                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 0.8em;">
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">OC</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ sub_data.min_rank }}<br>Marks: {{ sub_data.min_marks }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">BC</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 1.2)|int }}<br>Marks: {{ sub_data.min_marks - 2 }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">SC</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 1.5)|int }}<br>Marks: {{ sub_data.min_marks - 5 }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">ST</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 2.0)|int }}<br>Marks: {{ sub_data.min_marks - 8 }}/160</div>
+                                                                </div>
+                                                                <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                    <div style="font-weight: 600; color: #856404;">EWS</div>
+                                                                    <div style="color: #2c3e50;">Rank: {{ (sub_data.min_rank * 1.3)|int }}<br>Marks: {{ sub_data.min_marks - 3 }}/160</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <!-- For streams without sub-courses, show as before -->
+                                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
+                                                    <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 1.1em;">{{ stream_name }}</div>
+                                                    <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 12px;">
+                                                        <div style="margin-bottom: 5px;">🎯 Min Rank: {{ stream_data.min_rank }}</div>
+                                                        <div style="margin-bottom: 5px;">📊 Min Marks: {{ stream_data.min_marks }}/160</div>
+                                                        <div style="margin-bottom: 10px;">📈 Placement: {{ stream_data.placement }}</div>
+                                                    </div>
+                                                    <!-- Caste-specific requirements for this stream -->
+                                                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 10px; margin-top: 10px;">
+                                                        <div style="font-weight: 600; color: #856404; margin-bottom: 8px; font-size: 0.9em;">🎯 Caste-wise Requirements for {{ stream_name }}:</div>
+                                                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 0.8em;">
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">OC</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ stream_data.min_rank }}<br>Marks: {{ stream_data.min_marks }}/160</div>
+                                                            </div>
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">BC</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 1.2)|int }}<br>Marks: {{ stream_data.min_marks - 2 }}/160</div>
+                                                            </div>
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">SC</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 1.5)|int }}<br>Marks: {{ stream_data.min_marks - 5 }}/160</div>
+                                                            </div>
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">ST</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 2.0)|int }}<br>Marks: {{ stream_data.min_marks - 8 }}/160</div>
+                                                            </div>
+                                                            <div style="background: #fff; padding: 6px; border-radius: 4px; border-left: 3px solid #f39c12;">
+                                                                <div style="font-weight: 600; color: #856404;">EWS</div>
+                                                                <div style="color: #2c3e50;">Rank: {{ (stream_data.min_rank * 1.3)|int }}<br>Marks: {{ stream_data.min_marks - 3 }}/160</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- Caste-specific Requirements -->
+                        <div class="caste-requirements">
+                            <h4>🎯 Caste-wise Requirements (Example for Engineering)</h4>
+                            <div class="caste-grid">
+                                {% set sample_stream = college.streams.values() | first %}
+                                <div class="caste-item">
+                                    <div class="caste-label">OC (General)</div>
+                                    <div class="caste-value">Rank: {{ sample_stream.min_rank }}<br>Marks: {{ sample_stream.min_marks }}/160</div>
+                                </div>
+                                <div class="caste-item">
+                                    <div class="caste-label">BC (25% Reservation)</div>
+                                    <div class="caste-value">Rank: {{ (sample_stream.min_rank * 1.2)|int }}<br>Marks: {{ sample_stream.min_marks - 2 }}/160</div>
+                                </div>
+                                <div class="caste-item">
+                                    <div class="caste-label">SC (15% Reservation)</div>
+                                    <div class="caste-value">Rank: {{ (sample_stream.min_rank * 1.5)|int }}<br>Marks: {{ sample_stream.min_marks - 5 }}/160</div>
+                                </div>
+                                <div class="caste-item">
+                                    <div class="caste-label">ST (6% Reservation)</div>
+                                    <div class="caste-value">Rank: {{ (sample_stream.min_rank * 2.0)|int }}<br>Marks: {{ sample_stream.min_marks - 8 }}/160</div>
+                                </div>
+                                <div class="caste-item">
+                                    <div class="caste-label">EWS (10% Reservation)</div>
+                                    <div class="caste-value">Rank: {{ (sample_stream.min_rank * 1.3)|int }}<br>Marks: {{ sample_stream.min_marks - 3 }}/160</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Gender Information -->
+                        <div class="gender-info">
+                            <div class="detail-label">👥 Gender Eligibility:</div>
+                            <div class="detail-value">
+                                {% if 'Women' in college.name %}
+                                    <strong>Women Only</strong> - Only female students can apply
+                                {% else %}
+                                    <strong>All Genders</strong> - Open to male, female, and other genders
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="stream-tags">
+                            {% for stream_name in college.streams.keys() %}
+                            <span class="stream-tag">{{ stream_name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-top: 30px; text-align: center;">
+        <h3 style="color: #2c3e50; margin-bottom: 10px;">💡 How to Use This Information</h3>
+        <p style="color: #7f8c8d; margin-bottom: 10px;">
+            Use this comprehensive list to research colleges before applying. Consider your EAMCET marks, 
+            predicted rank, caste category, and preferred stream to find the best matches for your profile.
+            <strong>Note:</strong> Caste-wise requirements show the relaxation benefits available for different categories.
+        </p>
+        <a href="{{ url_for('admission') }}" style="display: inline-block; background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 10px;">
+            🚀 Get Personalized Admission Advice
+        </a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('courseSearch');
+    const searchOptions = document.getElementById('searchOptions');
+    const searchResults = document.getElementById('searchResults');
+    const searchResultsContent = document.getElementById('searchResultsContent');
+    const allCollegeCards = document.querySelectorAll('.college-card');
+    const clearSearchButton = document.getElementById('clearSearch');
+    
+    // Search function
+    function performSearch(searchTerm) {
+        if (!searchTerm || searchTerm.length < 2) {
+            searchResults.style.display = 'none';
+            showAllContent();
+            return;
+        }
+        
+        const searchLower = searchTerm.toLowerCase();
+        let foundResults = [];
+        
+        console.log('Searching for:', searchTerm);
+        console.log('Total college cards found:', allCollegeCards.length);
+        
+        // Search through all college cards
+        allCollegeCards.forEach((card, index) => {
+            const collegeName = card.querySelector('.college-name').textContent.trim();
+            let collegeHasMatch = false;
+            
+            console.log(`Checking college ${index + 1}:`, collegeName);
+            
+            // Check if college name matches
+            if (collegeName.toLowerCase().includes(searchLower)) {
+                collegeHasMatch = true;
+                console.log('  - College name matches');
+            }
+            
+            // Search through streams and sub-courses
+            const streamButtons = card.querySelectorAll('.accordion-button');
+            console.log(`  - Found ${streamButtons.length} stream buttons`);
+            
+            streamButtons.forEach((streamBtn, streamIndex) => {
+                const streamName = streamBtn.textContent.trim();
+                const accordionItem = streamBtn.closest('.accordion-item');
+                const accordionBody = accordionItem.querySelector('.accordion-body');
+                
+                console.log(`    Stream ${streamIndex + 1}:`, streamName);
+                
+                // Check if stream name matches
+                if (streamName.toLowerCase().includes(searchLower)) {
+                    collegeHasMatch = true;
+                    console.log('      - Stream name matches');
+                }
+                
+                // Check sub-courses if they exist
+                if (accordionBody) {
+                    const subCourseDivs = accordionBody.querySelectorAll('[style*="background: #f8f9fa"]');
+                    console.log(`      - Found ${subCourseDivs.length} sub-course divs`);
+                    
+                    if (subCourseDivs.length > 0) {
+                        // Has sub-courses
+                        subCourseDivs.forEach((subDiv, subIndex) => {
+                            const subNameElement = subDiv.querySelector('[style*="font-weight: 600; color: #2c3e50"]');
+                            if (subNameElement) {
+                                const subName = subNameElement.textContent.trim();
+                                console.log(`        Sub-course ${subIndex + 1}:`, subName);
+                                
+                                if (subName.toLowerCase().includes(searchLower)) {
+                                    collegeHasMatch = true;
+                                    console.log('          - Sub-course matches!');
+                                    foundResults.push({
+                                        college: collegeName,
+                                        stream: streamName,
+                                        course: subName,
+                                        type: 'sub-course'
+                                    });
+                                }
+                            }
+                        });
+                    } else {
+                        // No sub-courses, check if stream matches
+                        if (streamName.toLowerCase().includes(searchLower)) {
+                            console.log('      - Stream matches (no sub-courses)');
+                            foundResults.push({
+                                college: collegeName,
+                                stream: streamName,
+                                course: streamName,
+                                type: 'stream'
+                            });
+                        }
+                    }
+                } else {
+                    // No accordion body, check if stream matches
+                    if (streamName.toLowerCase().includes(searchLower)) {
+                        console.log('      - Stream matches (no accordion body)');
+                        foundResults.push({
+                            college: collegeName,
+                            stream: streamName,
+                            course: streamName,
+                            type: 'stream'
+                        });
+                    }
+                }
+            });
+            
+            // If college has any match, add it to results
+            if (collegeHasMatch) {
+                foundResults.push({
+                    college: collegeName,
+                    stream: 'All',
+                    course: 'All',
+                    type: 'college'
+                });
+            }
+        });
+        
+        console.log('Final results:', foundResults);
+        
+        if (foundResults.length > 0) {
+            displaySearchResults(foundResults, searchTerm);
+            filterContentBySearch(foundResults, searchTerm);
+        } else {
+            displayNoResults();
+            hideAllContent();
+        }
+    }
+    
+    // Display search results
+    function displaySearchResults(results, searchTerm) {
+        searchResults.style.display = 'block';
+        
+        // Remove duplicates
+        const uniqueResults = results.filter((result, index, self) => 
+            index === self.findIndex(r => r.college === result.college && r.stream === result.stream && r.course === result.course)
+        );
+        
+        let html = '<h4 style="color: #2c3e50; margin-bottom: 15px;">🔍 Search Results (' + uniqueResults.length + ' matches)</h4>';
+        
+        uniqueResults.forEach((result, index) => {
+            const highlightedCollege = highlightText(result.college, searchTerm);
+            const highlightedStream = highlightText(result.stream, searchTerm);
+            const highlightedCourse = highlightText(result.course, searchTerm);
+            
+            html += `
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #3498db; cursor: pointer;" 
+                     onclick="scrollToResult('${result.college}', '${result.stream}', '${result.course}')">
+                    <div style="font-weight: 600; color: #2c3e50; margin-bottom: 5px;">
+                        🏫 ${highlightedCollege}
+                    </div>
+                    <div style="color: #7f8c8d; font-size: 0.9em;">
+                        📚 ${highlightedStream} ${result.type === 'sub-course' ? '→ ' + highlightedCourse : ''}
+                    </div>
+                    <div style="color: #27ae60; font-size: 0.8em; margin-top: 5px;">
+                        Click to view details
+                    </div>
+                </div>
+            `;
+        });
+        
+        searchResultsContent.innerHTML = html;
+    }
+    
+    // Display no results message
+    function displayNoResults() {
+        searchResults.style.display = 'block';
+        searchResultsContent.innerHTML = `
+            <div class="no-results">
+                <h4 style="color: #7f8c8d; margin-bottom: 10px;">🔍 No Results Found</h4>
+                <p style="color: #7f8c8d;">Try searching for different terms like:</p>
+                <ul style="color: #7f8c8d; text-align: left; display: inline-block;">
+                    <li>Engineering, CSE, ECE, Mechanical</li>
+                    <li>Medical, Commerce, Arts, Science</li>
+                    <li>BSc Physics, BA English, BCom</li>
+                    <li>College names or locations</li>
+                </ul>
+            </div>
+        `;
+    }
+    
+    // Filter content to show only matching results
+    function filterContentBySearch(results, searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const matchingColleges = new Set(results.map(r => r.college));
+        
+        allCollegeCards.forEach(card => {
+            const collegeName = card.querySelector('.college-name').textContent.trim();
+            const isMatchingCollege = matchingColleges.has(collegeName);
+            
+            if (isMatchingCollege) {
+                card.style.display = 'block';
+                card.style.opacity = '1';
+                
+                // Filter streams within matching colleges
+                const streamButtons = card.querySelectorAll('.accordion-button');
+                streamButtons.forEach(streamBtn => {
+                    const streamName = streamBtn.textContent.trim();
+                    const accordionItem = streamBtn.closest('.accordion-item');
+                    const accordionBody = accordionItem.querySelector('.accordion-body');
+                    
+                    // Check if this stream matches the search
+                    const streamMatches = streamName.toLowerCase().includes(searchLower);
+                    
+                    if (streamMatches) {
+                        // Show this stream section
+                        accordionItem.style.display = 'block';
+                        
+                        // If it has sub-courses, show all of them for this stream
+                        if (accordionBody) {
+                            const subCourseDivs = accordionBody.querySelectorAll('[style*="background: #f8f9fa"]');
+                            if (subCourseDivs.length > 0) {
+                                subCourseDivs.forEach(subDiv => {
+                                    subDiv.style.display = 'block';
+                                });
+                            }
+                        }
+                    } else {
+                        // Check if any sub-courses in this stream match
+                        let hasMatchingSubCourse = false;
+                        if (accordionBody) {
+                            const subCourseDivs = accordionBody.querySelectorAll('[style*="background: #f8f9fa"]');
+                            if (subCourseDivs.length > 0) {
+                                subCourseDivs.forEach(subDiv => {
+                                    const subNameElement = subDiv.querySelector('[style*="font-weight: 600; color: #2c3e50"]');
+                                    if (subNameElement) {
+                                        const subCourseName = subNameElement.textContent.trim();
+                                        const subCourseMatches = subCourseName.toLowerCase().includes(searchLower);
+                                        
+                                        if (subCourseMatches) {
+                                            subDiv.style.display = 'block';
+                                            hasMatchingSubCourse = true;
+                                        } else {
+                                            subDiv.style.display = 'none';
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                        
+                        // Show stream if it has matching sub-courses, otherwise hide
+                        if (hasMatchingSubCourse) {
+                            accordionItem.style.display = 'block';
+                        } else {
+                            accordionItem.style.display = 'none';
+                        }
+                    }
+                });
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    // Show all content
+    function showAllContent() {
+        allCollegeCards.forEach(card => {
+            card.style.display = 'block';
+            card.style.opacity = '1';
+            
+            // Show all streams and sub-courses
+            const streamButtons = card.querySelectorAll('.accordion-button');
+            streamButtons.forEach(streamBtn => {
+                const accordionItem = streamBtn.closest('.accordion-item');
+                const accordionBody = accordionItem.querySelector('.accordion-body');
+                
+                // Show the stream
+                accordionItem.style.display = 'block';
+                
+                // Show all sub-courses if they exist
+                if (accordionBody) {
+                    const subCourseDivs = accordionBody.querySelectorAll('[style*="background: #f8f9fa"]');
+                    subCourseDivs.forEach(subDiv => {
+                        subDiv.style.display = 'block';
+                    });
+                }
+            });
+        });
+    }
+    
+    // Hide all content
+    function hideAllContent() {
+        allCollegeCards.forEach(card => {
+            card.style.display = 'none';
+        });
+    }
+    
+    // Highlight text in search results
+    function highlightText(text, searchTerm) {
+        if (!searchTerm) return text;
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+    }
+    
+    // Scroll to specific result
+    window.scrollToResult = function(collegeName, streamName, courseName) {
+        const targetCard = Array.from(allCollegeCards).find(card => 
+            card.querySelector('.college-name').textContent.trim() === collegeName
+        );
+        
+        if (targetCard) {
+            // Show all content first
+            showAllContent();
+            
+            // Scroll to the card
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Highlight the card temporarily
+            targetCard.style.boxShadow = '0 0 20px rgba(52, 152, 219, 0.5)';
+            setTimeout(() => {
+                targetCard.style.boxShadow = '';
+            }, 3000);
+            
+            // Find and expand the relevant accordion
+            const streamButton = targetCard.querySelector(`.accordion-button`);
+            if (streamButton && streamButton.textContent.trim().includes(streamName)) {
+                // Expand the accordion
+                const accordionItem = streamButton.closest('.accordion-item');
+                const collapseElement = accordionItem.querySelector('.accordion-collapse');
+                if (collapseElement && !collapseElement.classList.contains('show')) {
+                    streamButton.click();
+                }
+            }
+        }
+        
+        // Hide search results
+        searchResults.style.display = 'none';
+    };
+    
+    // Clear search function
+    function clearSearch() {
+        searchInput.value = '';
+        searchResults.style.display = 'none';
+        searchOptions.style.display = 'none';
+        clearSearchButton.style.display = 'none';
+        showAllContent();
+    }
+    
+    // Make clearSearch globally accessible
+    window.clearSearch = clearSearch;
+    
+    // Add clear button functionality
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.trim();
+        
+        // If input is cleared, show all content
+        if (searchTerm === '') {
+            clearSearch();
+            return;
+        }
+        
+        performSearch(searchTerm);
+        clearSearchButton.style.display = 'block'; // Show clear button
+    });
+    
+    searchInput.addEventListener('focus', function() {
+        // Always show options when focused and input is empty or short
+        if (this.value.trim().length < 2) {
+            searchOptions.style.display = 'block';
+            searchResults.style.display = 'none';
+            clearSearchButton.style.display = 'none'; // Hide clear button
+        } else {
+            searchResults.style.display = 'block';
+            searchOptions.style.display = 'none';
+            clearSearchButton.style.display = 'block'; // Show clear button
+        }
+    });
+    
+    searchInput.addEventListener('blur', function() {
+        // Don't hide options immediately to allow button clicks
+        setTimeout(() => {
+            // Only hide if not clicking on options or results
+            if (!searchOptions.contains(document.activeElement) && !searchResults.contains(document.activeElement)) {
+                searchOptions.style.display = 'none';
+            }
+        }, 150);
+    });
+    
+    // Handle option button clicks
+    document.querySelectorAll('.option-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const searchTerm = this.dataset.search;
+            console.log('Option clicked:', searchTerm);
+            
+            // Set the search input value
+            searchInput.value = searchTerm;
+            
+            // Perform the search
+            performSearch(searchTerm);
+            
+            // Hide options and show results
+            searchOptions.style.display = 'none';
+            searchResults.style.display = 'block';
+            clearSearchButton.style.display = 'block'; // Show clear button
+            
+            // Keep focus on input
+            searchInput.focus();
+        });
+    });
+    
+    // Close search results when clicking outside
+    document.addEventListener('click', function(e) {
+        const isClickInsideSearch = searchInput.contains(e.target) || 
+                                  searchOptions.contains(e.target) || 
+                                  searchResults.contains(e.target);
+        
+        if (!isClickInsideSearch) {
+            searchResults.style.display = 'none';
+            searchOptions.style.display = 'none';
+            clearSearchButton.style.display = 'none'; // Hide clear button
+        }
+    });
+    
+    // Add keyboard support
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            searchResults.style.display = 'none';
+            searchOptions.style.display = 'none';
+            this.blur();
+            clearSearchButton.style.display = 'none'; // Hide clear button
+        }
+    });
+});
+</script>
+
+{% endblock %} 
