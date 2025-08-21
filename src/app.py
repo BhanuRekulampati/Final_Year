@@ -2,7 +2,13 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 try:
     # When running as a package (e.g., gunicorn with src.app:app)
     from .decision_maker import DecisionMaker
-except ImportError:  # Fallback for running locally via `python src/app.py` or from src dir
+except ImportError:  # Fallback for running locally via various working directories
+    import os
+    import sys
+    # Ensure the directory containing this file is on sys.path
+    current_dir = os.path.dirname(__file__)
+    if current_dir and current_dir not in sys.path:
+        sys.path.append(current_dir)
     from decision_maker import DecisionMaker
 import numpy as np
 import sqlite3
