@@ -1,5 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, g, send_file
-from decision_maker import DecisionMaker
+try:
+    # When running as a package (e.g., gunicorn with src.app:app)
+    from .decision_maker import DecisionMaker
+except ImportError:  # Fallback for running locally via `python src/app.py` or from src dir
+    from decision_maker import DecisionMaker
 import numpy as np
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
