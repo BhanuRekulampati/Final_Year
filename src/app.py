@@ -14,7 +14,6 @@ import numpy as np
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-import cv2
 import threading
 import random
 import string
