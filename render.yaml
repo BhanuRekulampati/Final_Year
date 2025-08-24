@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: ai-decision-platform
+    env: python
+    plan: free
+    buildCommand: chmod +x render-build.sh && ./render-build.sh
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 src.app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9

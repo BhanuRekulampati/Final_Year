@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gadget Analyzer - Smart Buying Decisions</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pros-section {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-left: 5px solid #28a745;
+        }
+
+        .cons-section {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-left: 5px solid #dc3545;
+        }
+
+        .recommendation-section {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border-left: 5px solid #ffc107;
+        }
+
+        .suggestion-section {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            border-left: 5px solid #17a2b8;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Dark theme styles */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .glass-card {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .input-field {
+            background: rgba(51, 65, 85, 0.9);
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .input-field:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        body.dark-mode .pros-section {
+            background: linear-gradient(135deg, #065f46, #047857);
+            border-left: 5px solid #10b981;
+        }
+
+        body.dark-mode .cons-section {
+            background: linear-gradient(135deg, #7f1d1d, #991b1b);
+            border-left: 5px solid #ef4444;
+        }
+
+        body.dark-mode .recommendation-section {
+            background: linear-gradient(135deg, #92400e, #a16207);
+            border-left: 5px solid #f59e0b;
+        }
+
+        body.dark-mode .suggestion-section {
+            background: linear-gradient(135deg, #0e7490, #0891b2);
+            border-left: 5px solid #06b6d4;
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e2e8f0;
+            color: #374151;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .theme-toggle {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Dark mode text adjustments */
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode h3,
+        body.dark-mode h4,
+        body.dark-mode h5,
+        body.dark-mode h6 {
+            color: #f8fafc;
+        }
+
+        body.dark-mode label {
+            color: #e2e8f0;
+        }
+
+        body.dark-mode p {
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .text-gray-600 {
+            color: #94a3b8;
+        }
+
+        body.dark-mode .text-gray-700 {
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .text-gray-800 {
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .bg-white {
+            background: rgba(30, 41, 59, 0.9);
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .text-gray-600 {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <i class="fas fa-sun" id="theme-icon"></i>
+    </button>
+
+    <div class="min-h-screen py-8 px-4">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                <i class="fas fa-mobile-alt mr-4"></i>
+                Gadget Analyzer
+            </h1>
+            <p class="text-xl text-white/90 max-w-3xl mx-auto">
+                Enter any gadget name and get AI-powered analysis with pros, cons, buying recommendations, and newer model suggestions
+            </p>
+        </div>
+
+        <!-- Main Form -->
+        <div class="max-w-4xl mx-auto">
+            <div class="glass-card p-8 mb-8">
+                <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">
+                    <i class="fas fa-search mr-3 text-purple-600"></i>
+                    Analyze Your Gadget
+                </h2>
+                
+                <form id="gadgetForm" class="space-y-6">
+                    <div>
+                        <label class="block text-lg font-semibold mb-3 text-gray-700">
+                            <i class="fas fa-tag mr-2 text-purple-600"></i>
+                            Gadget Name
+                        </label>
+                        <input 
+                            type="text" 
+                            id="gadgetName" 
+                            name="gadgetName" 
+                            class="input-field" 
+                            placeholder="e.g., iPhone 15 Pro, Samsung Galaxy S24, MacBook Air M3, Sony WH-1000XM5..."
+                            required
+                        >
+                        <p class="text-sm text-gray-600 mt-2">
+                            Enter the exact model name for the most accurate analysis
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-lg font-semibold mb-3 text-gray-700">
+                                <i class="fas fa-category mr-2 text-purple-600"></i>
+                                Category
+                            </label>
+                            <select id="category" name="category" class="input-field">
+                                <option value="">Auto-detect</option>
+                                <option value="smartphone">Smartphone</option>
+                                <option value="laptop">Laptop</option>
+                                <option value="tablet">Tablet</option>
+                                <option value="smartwatch">Smartwatch</option>
+                                <option value="headphones">Headphones</option>
+                                <option value="camera">Camera</option>
+                                <option value="gaming">Gaming Console</option>
+                                <option value="tv">TV</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-lg font-semibold mb-3 text-gray-700">
+                                <i class="fas fa-dollar-sign mr-2 text-purple-600"></i>
+                                Your Budget (Optional)
+                            </label>
+                            <input 
+                                type="text" 
+                                id="budget" 
+                                name="budget" 
+                                class="input-field" 
+                                placeholder="e.g., $1000, $500-800, Under $300..."
+                            >
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary w-full text-lg py-4">
+                        <i class="fas fa-magic mr-3"></i>
+                        Analyze Gadget
+                    </button>
+                </form>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="glass-card p-8 text-center" style="display: none;">
+                <div class="loading-spinner mb-6"></div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-800">Analyzing your gadget...</h3>
+                <p class="text-lg text-gray-600 mb-4">Our AI is gathering market data and analyzing current trends</p>
+                <div class="flex justify-center space-x-2">
+                    <div class="w-3 h-3 bg-purple-600 rounded-full animate-pulse"></div>
+                    <div class="w-3 h-3 bg-purple-600 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                    <div class="w-3 h-3 bg-purple-600 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" style="display: none;" class="space-y-8">
+                <!-- Gadget Info -->
+                <div class="glass-card p-8 fade-in">
+                    <div class="text-center mb-6">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2" id="gadgetTitle">
+                            <i class="fas fa-mobile-alt mr-3 text-purple-600"></i>
+                            Analysis Results
+                        </h2>
+                        <p class="text-lg text-gray-600" id="gadgetSubtitle">Comprehensive analysis and recommendations</p>
+                    </div>
+                </div>
+
+                <!-- Pros and Cons -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass-card p-6 pros-section fade-in">
+                        <h3 class="text-2xl font-bold mb-6 text-green-800">
+                            <i class="fas fa-check-circle mr-3"></i>
+                            Pros & Advantages
+                        </h3>
+                        <ul id="prosList" class="space-y-3">
+                            <!-- Pros will be populated by JavaScript -->
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card p-6 cons-section fade-in">
+                        <h3 class="text-2xl font-bold mb-6 text-red-800">
+                            <i class="fas fa-times-circle mr-3"></i>
+                            Cons & Limitations
+                        </h3>
+                        <ul id="consList" class="space-y-3">
+                            <!-- Cons will be populated by JavaScript -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Buying Recommendation -->
+                <div class="glass-card p-8 recommendation-section fade-in">
+                    <h3 class="text-2xl font-bold mb-6 text-yellow-800">
+                        <i class="fas fa-lightbulb mr-3"></i>
+                        Buying Recommendation
+                    </h3>
+                    <div id="recommendation" class="text-lg leading-relaxed">
+                        <!-- Recommendation will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Newer Model Suggestions -->
+                <div class="glass-card p-8 suggestion-section fade-in">
+                    <h3 class="text-2xl font-bold mb-6 text-blue-800">
+                        <i class="fas fa-arrow-up mr-3"></i>
+                        Newer Model Suggestions
+                    </h3>
+                    <div id="suggestions" class="space-y-4">
+                        <!-- Suggestions will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Market Analysis -->
+                <div class="glass-card p-8 fade-in">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-800">
+                        <i class="fas fa-chart-line mr-3 text-purple-600"></i>
+                        Market Analysis
+                    </h3>
+                    <div id="marketAnalysis" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Market analysis will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Load saved theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeIcon.className = 'fas fa-moon';
+            }
+        });
+
+        document.getElementById('gadgetForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const gadgetName = document.getElementById('gadgetName').value.trim();
+            const category = document.getElementById('category').value;
+            
+            if (!gadgetName) {
+                alert('Please enter a gadget name');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            try {
+                const response = await fetch('/analyze_gadget', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        gadget: gadgetName,
+                        category: category || 'auto'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Hide loading and show results
+                document.getElementById('loading').style.display = 'none';
+                displayResults(gadgetName, data.data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                alert('Error analyzing gadget: ' + error.message);
+            }
+        });
+
+        function displayResults(gadgetName, data) {
+            const analysisData = JSON.parse(data);
+            
+            // Update title
+            document.getElementById('gadgetTitle').innerHTML = 
+                `<i class="fas fa-mobile-alt mr-3 text-purple-600"></i>${gadgetName} Analysis`;
+            
+            // Display pros
+            const prosList = document.getElementById('prosList');
+            prosList.innerHTML = analysisData.pros.map(pro => 
+                `<li class="flex items-start">
+                    <i class="fas fa-check text-green-600 mr-3 mt-1 flex-shrink-0"></i>
+                    <span class="text-green-800">${pro}</span>
+                </li>`
+            ).join('');
+            
+            // Display cons
+            const consList = document.getElementById('consList');
+            consList.innerHTML = analysisData.cons.map(con => 
+                `<li class="flex items-start">
+                    <i class="fas fa-times text-red-600 mr-3 mt-1 flex-shrink-0"></i>
+                    <span class="text-red-800">${con}</span>
+                </li>`
+            ).join('');
+            
+            // Generate and display recommendation
+            const recommendation = generateRecommendation(gadgetName, analysisData);
+            document.getElementById('recommendation').innerHTML = recommendation;
+            
+            // Generate and display suggestions
+            const suggestions = generateSuggestions(gadgetName, analysisData);
+            document.getElementById('suggestions').innerHTML = suggestions;
+            
+            // Generate market analysis
+            const marketAnalysis = generateMarketAnalysis(gadgetName, analysisData);
+            document.getElementById('marketAnalysis').innerHTML = marketAnalysis;
+            
+            // Show results
+            document.getElementById('results').style.display = 'block';
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generateRecommendation(gadgetName, data) {
+            const gadgetLower = gadgetName.toLowerCase();
+            let recommendation = '';
+            
+            // Check if it's an old model
+            if (gadgetLower.includes('iphone') && (gadgetLower.includes('12') || gadgetLower.includes('11') || gadgetLower.includes('10'))) {
+                recommendation = `
+                    <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-4">
+                        <h4 class="font-bold text-red-800 mb-2">⚠️ Consider Newer Model</h4>
+                        <p class="text-red-700">This appears to be an older iPhone model. Consider the iPhone 15 series for better performance, camera quality, and longer software support.</p>
+                    </div>
+                `;
+            } else if (gadgetLower.includes('samsung') && (gadgetLower.includes('s21') || gadgetLower.includes('s20') || gadgetLower.includes('note 20'))) {
+                recommendation = `
+                    <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-4">
+                        <h4 class="font-bold text-red-800 mb-2">⚠️ Consider Newer Model</h4>
+                        <p class="text-red-700">This appears to be an older Samsung model. Consider the Galaxy S24 series for better performance, camera quality, and longer software support.</p>
+                    </div>
+                `;
+            }
+            
+            return recommendation;
+        }
+
+        function generateSuggestions(gadgetName, data) {
+            const gadgetLower = gadgetName.toLowerCase();
+            let suggestions = '';
+            
+            if (gadgetLower.includes('iphone')) {
+                suggestions = `
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
+                        <h4 class="font-bold text-blue-800 mb-4">📱 Newer iPhone Alternatives</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h5 class="font-semibold text-gray-800">iPhone 15 Pro</h5>
+                                <p class="text-sm text-gray-600">Latest flagship with A17 Pro chip, titanium design</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h5 class="font-semibold text-gray-800">iPhone 15</h5>
+                                <p class="text-sm text-gray-600">Great value with A16 chip and USB-C</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (gadgetLower.includes('samsung')) {
+                suggestions = `
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
+                        <h4 class="font-bold text-blue-800 mb-4">📱 Newer Samsung Alternatives</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h5 class="font-semibold text-gray-800">Galaxy S24 Ultra</h5>
+                                <p class="text-sm text-gray-600">Premium flagship with S Pen and titanium frame</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h5 class="font-semibold text-gray-800">Galaxy S24+</h5>
+                                <p class="text-sm text-gray-600">Excellent performance with large display</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (gadgetLower.includes('macbook')) {
+                suggestions = `
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
+                        <h4 class="font-bold text-blue-800 mb-4">💻 Newer MacBook Alternatives</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h5 class="font-semibold text-gray-800">MacBook Air M3</h5>
+                                <p class="text-sm text-gray-600">Latest M3 chip with excellent performance</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h5 class="font-semibold text-gray-800">MacBook Pro M3</h5>
+                                <p class="text-sm text-gray-600">Professional performance with advanced features</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                suggestions = `
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
+                        <h4 class="font-bold text-blue-800 mb-4">🔄 Consider These Alternatives</h4>
+                        <p class="text-blue-700">Research the latest models in this category for better performance, features, and value. Check manufacturer websites for the most recent releases.</p>
+                    </div>
+                `;
+            }
+            
+            return suggestions;
+        }
+
+        function generateMarketAnalysis(gadgetName, data) {
+            return `
+                <div class="text-center">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <i class="fas fa-chart-line text-3xl text-green-600 mb-4"></i>
+                        <h4 class="font-bold text-gray-800 mb-2">Market Position</h4>
+                        <p class="text-gray-600">Competitive pricing with good value proposition</p>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <i class="fas fa-clock text-3xl text-blue-600 mb-4"></i>
+                        <h4 class="font-bold text-gray-800 mb-2">Release Timeline</h4>
+                        <p class="text-gray-600">Check for upcoming releases and price drops</p>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <i class="fas fa-star text-3xl text-yellow-600 mb-4"></i>
+                        <h4 class="font-bold text-gray-800 mb-2">User Rating</h4>
+                        <p class="text-gray-600">Generally positive reviews from users</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

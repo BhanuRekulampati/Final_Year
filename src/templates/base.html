@@ -4,20 +4,321 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AI Decision Platform{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f4f6f8; margin: 0; }
-        .navbar { background: #253858; color: #fff; padding: 0 24px; display: flex; align-items: center; height: 56px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .navbar .logo { font-weight: 600; font-size: 1.2em; letter-spacing: 1px; margin-right: 32px; }
-        .navbar a { color: #fff; text-decoration: none; margin: 0 14px; font-weight: 500; transition: color 0.2s; }
-        .navbar a:hover { color: #5b9bd5; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+        
+        /* Dark theme styles */
+        body.dark-theme {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: #e2e8f0;
+        }
+        
+        body.dark-theme .navbar {
+            background: rgba(26, 32, 44, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        body.dark-theme .navbar a {
+            color: #e2e8f0;
+        }
+        
+        body.dark-theme .navbar a:hover {
+            color: #90cdf4;
+            background: rgba(144, 205, 244, 0.1);
+        }
+        
+        body.dark-theme .card {
+            background: rgba(45, 55, 72, 0.95);
+            color: #e2e8f0;
+        }
+        
+        body.dark-theme .card h3,
+        body.dark-theme .card h4 {
+            color: #f7fafc;
+        }
+        
+        body.dark-theme .card p {
+            color: #a0aec0;
+        }
+        
+        /* Card title and description classes for dark theme support */
+        .card-title {
+            color: #2d3748;
+        }
+        
+        .card-description {
+            color: #718096;
+        }
+        
+        body.dark-theme .card-title {
+            color: #f7fafc;
+        }
+        
+        body.dark-theme .card-description {
+            color: #a0aec0;
+        }
+        
+        body.dark-theme .user {
+            color: #a0aec0;
+        }
+        
+        .navbar { 
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            height: 70px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar .logo { 
+            font-weight: 700; 
+            font-size: 1.4rem; 
+            letter-spacing: -0.5px;
+            margin-right: 3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .navbar a { 
+            color: #4a5568; 
+            text-decoration: none; 
+            margin: 0 1rem; 
+            font-weight: 500; 
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .navbar a:hover { 
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        
         .navbar .spacer { flex: 1; }
-        .navbar .user { font-size: 0.98em; margin-right: 10px; }
-        .navbar .fa-user { margin-right: 5px; }
-        .content { padding: 36px 0; min-height: 80vh; }
-        .footer { text-align: center; color: #888; font-size: 0.95em; padding: 18px 0 10px 0; }
-        @media (max-width: 700px) { .navbar { flex-direction: column; height: auto; align-items: flex-start; } .navbar .logo { margin-bottom: 8px; } .content { padding: 18px 0; } }
+        
+        .navbar .user { 
+            font-size: 0.9rem; 
+            margin-right: 1rem;
+            color: #718096;
+            font-weight: 500;
+        }
+        
+        .navbar .fa-user { 
+            margin-right: 0.5rem;
+            color: #667eea;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: #4a5568;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-right: 1rem;
+        }
+        
+        .theme-toggle:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.1);
+        }
+        
+        body.dark-theme .theme-toggle {
+            color: #e2e8f0;
+        }
+        
+        body.dark-theme .theme-toggle:hover {
+            color: #90cdf4;
+            background: rgba(144, 205, 244, 0.1);
+        }
+        
+        .content { 
+            padding: 3rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: calc(100vh - 140px);
+        }
+        
+        .footer { 
+            text-align: center; 
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem; 
+            padding: 2rem 0;
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Modern card styles */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Button styles */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #4a5568;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+        
+        /* Form styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        /* Grid layout */
+        .grid {
+            display: grid;
+            gap: 2rem;
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) { 
+            .navbar { 
+                flex-direction: column; 
+                height: auto; 
+                align-items: flex-start;
+                padding: 1rem;
+            } 
+            .navbar .logo { 
+                margin-bottom: 1rem; 
+            } 
+            .content { 
+                padding: 2rem 1rem; 
+            }
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Status indicators */
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-success {
+            background: rgba(72, 187, 120, 0.1);
+            color: #38a169;
+        }
+        
+        .status-warning {
+            background: rgba(237, 137, 54, 0.1);
+            color: #dd6b20;
+        }
+        
+        .status-info {
+            background: rgba(66, 153, 225, 0.1);
+            color: #3182ce;
+        }
     </style>
     {% block head %}{% endblock %}
 </head>
@@ -25,17 +326,49 @@
     <div class="navbar">
         <span class="logo"><i class="fa-solid fa-brain"></i> AI Decision Platform</span>
         <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-table-columns"></i> Dashboard</a>
-        <a href="{{ url_for('index') }}"><i class="fa-solid fa-gavel"></i> Decision Maker</a>
-        <a href="{{ url_for('admission') }}"><i class="fa-solid fa-user-graduate"></i> College Admission Advisor</a>
+        <a href="{{ url_for('admission') }}"><i class="fa-solid fa-user-graduate"></i> College Advisor</a>
         <span class="spacer"></span>
-        <span class="user"><i class="fa-solid fa-user"></i> {{ session['username'] }}</span>
-        <a href="{{ url_for('logout') }}"><i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+        <button id="theme-toggle" class="theme-toggle" title="Toggle Theme">
+            <i class="fa-solid fa-sun" id="theme-icon"></i>
+        </button>
+        <span class="user"><i class="fa-solid fa-user"></i> Guest User</span>
     </div>
-    <div class="content">
+    
+    <div class="content fade-in">
         {% block content %}{% endblock %}
     </div>
+    
     <div class="footer">
-        &copy; {{ 2025 }} Your Name &mdash; B.Tech Final Year Project
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <p>&copy; 2025 AI Decision Platform &mdash; B.Tech Final Year Project</p>
+            <p style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.7;">Built with modern web technologies and AI</p>
+        </div>
     </div>
+    
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const body = document.body;
+        
+        // Check for saved theme preference or default to light theme
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            body.classList.add('dark-theme');
+            themeIcon.className = 'fa-solid fa-moon';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-theme');
+            
+            if (body.classList.contains('dark-theme')) {
+                themeIcon.className = 'fa-solid fa-moon';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.className = 'fa-solid fa-sun';
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
 </body>
 </html> 

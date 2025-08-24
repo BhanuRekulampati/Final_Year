@@ -1,4 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, g, send_file
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session
+import json
+import sqlite3
+import random
+import string
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from werkzeug.security import generate_password_hash, check_password_hash
 try:
     # When running as a package (e.g., gunicorn with src.app:app)
     from .decision_maker import DecisionMaker
@@ -11,21 +19,11 @@ except ImportError:  # Fallback for running locally via various working director
         sys.path.append(current_dir)
     from decision_maker import DecisionMaker
 import numpy as np
-import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
-import threading
-import random
-import string
-import time
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from collections import deque
 
 app = Flask(__name__)
+app.secret_key = 'your-secret-key-here'  # Required for sessions and flash messages
 decision_maker = DecisionMaker()
-app.secret_key = 'your_secret_key_here'  # Set a secret key for session management
+# No secret key needed since authentication is removed
 
 # Initialize and train the model with sample data
 training_features = np.array([
@@ -79,7 +77,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-init_db()
+# init_db() - removed since authentication is disabled
 
 # --- Database Migration Helper ---
 def migrate_existing_users():
@@ -104,8 +102,8 @@ def migrate_existing_users():
     finally:
         conn.close()
 
-# Run migration
-migrate_existing_users()
+# Run migration - removed since authentication is disabled
+# migrate_existing_users()
 
 # --- OTP Functions ---
 def generate_otp():
@@ -354,30 +352,18 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
-# --- Protect Main Page ---
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash('Please log in to access this page.', 'warning')
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+# --- Authentication removed - all routes are now public ---
 
 @app.route('/')
 def home():
-    if 'user_id' in session:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+    return redirect(url_for('dashboard'))
 
 @app.route('/dashboard')
-@login_required
 def dashboard():
-    return render_template('dashboard.html', username=session.get('username'))
+    return render_template('dashboard.html', username='Guest')
 
-@app.route('/', methods=['GET', 'POST'])
-@login_required
-def index():
+@app.route('/decision', methods=['GET', 'POST'])
+def decision():
     result = None
     if request.method == 'POST':
         cost = float(request.form['cost'])
@@ -392,7 +378,6 @@ def index():
 
 # --- Admission Route ---
 @app.route('/admission', methods=['GET', 'POST'])
-@login_required
 def admission():
     # EAMCET colleges - Telangana only with realistic rank requirements
     colleges = [
@@ -944,7 +929,6 @@ def admission():
     return render_template('admission.html', result=result, form_data=form_data)
 
 @app.route('/colleges')
-@login_required
 def colleges():
     # EAMCET colleges - Telangana only with realistic rank requirements
     colleges = [
@@ -1199,6 +1183,807 @@ def colleges():
                          mid_tier=mid_tier, 
                          lower_tier=lower_tier,
                          total_colleges=len(colleges))
+
+# --- Gadget Analyzer Routes ---
+@app.route('/gadget_analyzer')
+def gadget_analyzer():
+    """
+    Serves the gadget analyzer page.
+    """
+    return render_template('gadget_analyzer.html')
+
+# --- Stock Market Decision Maker Routes ---
+@app.route('/stock_decision_maker')
+def stock_decision_maker():
+    """
+    Serves the stock market decision maker page.
+    """
+    return render_template('stock_decision_maker.html')
+
+@app.route('/analyze_investment', methods=['POST'])
+def analyze_investment():
+    """
+    Handles POST requests to analyze investment opportunities using AI.
+    """
+    try:
+        data = request.get_json()
+        investment_amount = data.get('investment_amount', 0)
+        expected_profit = data.get('expected_profit', 0)
+        risk_tolerance = data.get('risk_tolerance', 'moderate')
+        investment_horizon = data.get('investment_horizon', 'medium')
+        sector_preference = data.get('sector_preference', 'any')
+        
+        if not investment_amount or not expected_profit:
+            return jsonify({"error": "Investment amount and expected profit are required"}), 400
+            
+    except Exception as e:
+        return jsonify({"error": f"Invalid JSON format: {str(e)}"}), 400
+    
+    try:
+        # Calculate key metrics
+        expected_return_rate = (expected_profit / investment_amount) * 100
+        risk_score = calculate_risk_score(investment_amount, expected_profit, risk_tolerance)
+        
+        # Generate investment recommendations
+        recommendations = generate_investment_recommendations(
+            investment_amount, expected_profit, risk_tolerance, 
+            investment_horizon, sector_preference
+        )
+        
+        # Calculate portfolio allocation
+        portfolio_allocation = calculate_portfolio_allocation(
+            investment_amount, risk_tolerance, investment_horizon
+        )
+        
+        # Market analysis
+        market_analysis = analyze_market_conditions(risk_tolerance, sector_preference)
+        
+        result = {
+            "investment_summary": {
+                "investment_amount": investment_amount,
+                "expected_profit": expected_profit,
+                "expected_return_rate": round(expected_return_rate, 2),
+                "risk_score": risk_score,
+                "investment_horizon": investment_horizon,
+                "risk_tolerance": risk_tolerance
+            },
+            "recommendations": recommendations,
+            "portfolio_allocation": portfolio_allocation,
+            "market_analysis": market_analysis,
+            "risk_assessment": {
+                "risk_level": get_risk_level(risk_score),
+                "risk_factors": get_risk_factors(risk_tolerance, expected_return_rate),
+                "mitigation_strategies": get_mitigation_strategies(risk_score)
+            }
+        }
+        
+        return jsonify({"data": json.dumps(result)}), 200
+        
+    except Exception as e:
+        print(f"Error in investment analysis: {e}")
+        return jsonify({"error": "Failed to analyze investment. Please try again."}), 500
+
+def calculate_risk_score(investment_amount, expected_profit, risk_tolerance):
+    """Calculate a risk score based on investment parameters."""
+    base_risk = (expected_profit / investment_amount) * 100
+    
+    risk_multipliers = {
+        'low': 0.7,
+        'moderate': 1.0,
+        'high': 1.5
+    }
+    
+    return min(100, base_risk * risk_multipliers.get(risk_tolerance, 1.0))
+
+def generate_investment_recommendations(investment_amount, expected_profit, risk_tolerance, investment_horizon, sector_preference):
+    """Generate investment recommendations based on parameters."""
+    
+    # Mock company data - in production, this would come from a real API
+    companies = {
+        'tech': [
+            {
+                'name': 'Apple Inc. (AAPL)',
+                'sector': 'Technology',
+                'risk_level': 'low',
+                'expected_return': '8-12%',
+                'reasoning': 'Stable tech giant with strong fundamentals and consistent growth'
+            },
+            {
+                'name': 'Microsoft Corp. (MSFT)',
+                'sector': 'Technology',
+                'risk_level': 'low',
+                'expected_return': '10-15%',
+                'reasoning': 'Cloud computing leader with diversified revenue streams'
+            },
+            {
+                'name': 'NVIDIA Corp. (NVDA)',
+                'sector': 'Technology',
+                'risk_level': 'moderate',
+                'expected_return': '15-25%',
+                'reasoning': 'AI and gaming chip leader with high growth potential'
+            }
+        ],
+        'finance': [
+            {
+                'name': 'JPMorgan Chase (JPM)',
+                'sector': 'Financial Services',
+                'risk_level': 'low',
+                'expected_return': '6-10%',
+                'reasoning': 'Well-established bank with strong dividend yield'
+            },
+            {
+                'name': 'Berkshire Hathaway (BRK.A)',
+                'sector': 'Financial Services',
+                'risk_level': 'low',
+                'expected_return': '8-12%',
+                'reasoning': 'Diversified conglomerate with proven track record'
+            }
+        ],
+        'healthcare': [
+            {
+                'name': 'Johnson & Johnson (JNJ)',
+                'sector': 'Healthcare',
+                'risk_level': 'low',
+                'expected_return': '7-11%',
+                'reasoning': 'Stable healthcare company with consistent dividends'
+            },
+            {
+                'name': 'UnitedHealth Group (UNH)',
+                'sector': 'Healthcare',
+                'risk_level': 'moderate',
+                'expected_return': '10-16%',
+                'reasoning': 'Leading health insurance provider with growth potential'
+            }
+        ],
+        'energy': [
+            {
+                'name': 'Exxon Mobil (XOM)',
+                'sector': 'Energy',
+                'risk_level': 'moderate',
+                'expected_return': '8-14%',
+                'reasoning': 'Major oil company with dividend stability'
+            }
+        ]
+    }
+    
+    # Filter companies based on risk tolerance and sector preference
+    if sector_preference == 'any':
+        all_companies = []
+        for sector_companies in companies.values():
+            all_companies.extend(sector_companies)
+        available_companies = all_companies
+    else:
+        available_companies = companies.get(sector_preference, companies['tech'])
+    
+    # Filter by risk tolerance
+    if risk_tolerance == 'low':
+        filtered_companies = [c for c in available_companies if c['risk_level'] == 'low']
+    elif risk_tolerance == 'moderate':
+        filtered_companies = [c for c in available_companies if c['risk_level'] in ['low', 'moderate']]
+    else:  # high risk tolerance
+        filtered_companies = available_companies
+    
+    # Sort by expected return and limit to top recommendations
+    filtered_companies.sort(key=lambda x: float(x['expected_return'].split('-')[1].replace('%', '')), reverse=True)
+    
+    return filtered_companies[:5]  # Return top 5 recommendations
+
+def calculate_portfolio_allocation(investment_amount, risk_tolerance, investment_horizon):
+    """Calculate recommended portfolio allocation."""
+    
+    if risk_tolerance == 'low':
+        if investment_horizon == 'short':
+            return {
+                'stocks': 40,
+                'bonds': 50,
+                'cash': 10,
+                'reasoning': 'Conservative allocation for short-term, low-risk investment'
+            }
+        else:
+            return {
+                'stocks': 50,
+                'bonds': 40,
+                'cash': 10,
+                'reasoning': 'Moderate allocation for long-term, low-risk investment'
+            }
+    elif risk_tolerance == 'moderate':
+        if investment_horizon == 'short':
+            return {
+                'stocks': 60,
+                'bonds': 30,
+                'cash': 10,
+                'reasoning': 'Balanced allocation for short-term, moderate-risk investment'
+            }
+        else:
+            return {
+                'stocks': 70,
+                'bonds': 25,
+                'cash': 5,
+                'reasoning': 'Growth-oriented allocation for long-term, moderate-risk investment'
+            }
+    else:  # high risk
+        if investment_horizon == 'short':
+            return {
+                'stocks': 80,
+                'bonds': 15,
+                'cash': 5,
+                'reasoning': 'Aggressive allocation for short-term, high-risk investment'
+            }
+        else:
+            return {
+                'stocks': 90,
+                'bonds': 8,
+                'cash': 2,
+                'reasoning': 'Maximum growth allocation for long-term, high-risk investment'
+            }
+
+def analyze_market_conditions(risk_tolerance, sector_preference):
+    """Analyze current market conditions and provide insights."""
+    
+    market_insights = {
+        'overall_market': 'Bullish with moderate volatility',
+        'key_drivers': [
+            'Strong corporate earnings growth',
+            'Federal Reserve policy stability',
+            'Technology sector innovation',
+            'Global economic recovery'
+        ],
+        'risks': [
+            'Inflation concerns',
+            'Geopolitical tensions',
+            'Interest rate fluctuations',
+            'Market valuation levels'
+        ],
+        'opportunities': [
+            'AI and technology growth',
+            'Green energy transition',
+            'Healthcare innovation',
+            'Emerging market recovery'
+        ]
+    }
+    
+    return market_insights
+
+def get_risk_level(risk_score):
+    """Determine risk level based on calculated risk score."""
+    if risk_score < 30:
+        return 'Low Risk'
+    elif risk_score < 60:
+        return 'Moderate Risk'
+    else:
+        return 'High Risk'
+
+def get_risk_factors(risk_tolerance, expected_return_rate):
+    """Identify key risk factors for the investment."""
+    risk_factors = []
+    
+    if expected_return_rate > 20:
+        risk_factors.append('High expected returns may indicate increased market volatility')
+    
+    if risk_tolerance == 'high':
+        risk_factors.append('High risk tolerance may lead to significant portfolio fluctuations')
+    
+    if expected_return_rate < 5:
+        risk_factors.append('Low expected returns may not keep pace with inflation')
+    
+    return risk_factors
+
+def get_mitigation_strategies(risk_score):
+    """Provide risk mitigation strategies."""
+    if risk_score < 30:
+        return [
+            'Maintain current conservative allocation',
+            'Focus on dividend-paying stocks',
+            'Consider bond laddering strategies'
+        ]
+    elif risk_score < 60:
+        return [
+            'Diversify across multiple sectors',
+            'Implement dollar-cost averaging',
+            'Set stop-loss orders for individual positions'
+        ]
+    else:
+        return [
+            'Limit position sizes to manage risk',
+            'Use options for downside protection',
+            'Maintain higher cash reserves',
+            'Consider professional financial advice'
+        ]
+
+@app.route('/analyze_gadget', methods=['POST'])
+def analyze_gadget():
+    """
+    Handles POST requests from the front-end to analyze a gadget using AI.
+    """
+    try:
+        data = request.get_json()
+        gadget = data.get('gadget', '').strip()
+        category = data.get('category', '').strip().lower()
+        if not gadget:
+            return jsonify({"error": "No gadget name provided"}), 400
+    except Exception as e:
+        return jsonify({"error": f"Invalid JSON format: {str(e)}"}), 400
+    
+    # Use AI-powered analysis with Gemini API
+    try:
+        # Create a comprehensive prompt for the AI
+        prompt = f"""
+        Analyze the gadget "{gadget}" in the category "{category}" and provide a detailed analysis.
+        
+        Please provide a JSON response with two arrays:
+        1. "pros" - List 5-7 advantages of buying this gadget based on current market trends, specifications, and value proposition
+        2. "cons" - List 3-5 disadvantages or considerations when buying this gadget
+        
+        For each point, include specific details about:
+        - Performance and specifications
+        - Price-to-value ratio
+        - Market positioning
+        - User experience factors
+        - Future-proofing considerations
+        
+        Format the response as valid JSON with this structure:
+        {{
+            "pros": ["advantage 1", "advantage 2", ...],
+            "cons": ["disadvantage 1", "disadvantage 2", ...]
+        }}
+        
+        Make the analysis practical and helpful for someone making a purchase decision.
+        """
+        
+        # Comprehensive gadget database with detailed analysis
+        gadget_database = {
+            # Smartphones
+            "iphone 15 pro": {
+                "pros": [
+                    "A17 Pro chip with 3nm process for exceptional performance and efficiency",
+                    "48 MP Main camera with advanced computational photography and 4K ProRes",
+                    "Premium titanium frame with Ceramic Shield for durability",
+                    "6.1-inch Super Retina XDR display with ProMotion up to 120Hz",
+                    "USB-C port for faster data transfer and charging",
+                    "iOS ecosystem integration with seamless connectivity",
+                    "5 years of iOS updates and security patches",
+                    "Excellent build quality and premium feel"
+                ],
+                "cons": [
+                    "Very high price point compared to Android alternatives",
+                    "Limited customization compared to Android devices",
+                    "Battery capacity could be larger for the premium price",
+                    "No expandable storage options",
+                    "Limited gaming options due to iOS restrictions"
+                ],
+                "current_trend": "Excellent",
+                "buying_recommendation": "Highly recommended for iOS users who want the best performance and camera quality"
+            },
+            "iphone 15": {
+                "pros": [
+                    "A16 Bionic chip for excellent performance",
+                    "48 MP Main camera with advanced features",
+                    "USB-C port for faster connectivity",
+                    "6.1-inch Super Retina XDR display",
+                    "Good value compared to Pro models",
+                    "iOS ecosystem benefits",
+                    "5 years of software support"
+                ],
+                "cons": [
+                    "Still expensive compared to Android alternatives",
+                    "60Hz display (no ProMotion)",
+                    "No telephoto camera",
+                    "Limited customization"
+                ],
+                "current_trend": "Good",
+                "buying_recommendation": "Good choice for iOS users who want latest features without Pro price"
+            },
+            "iphone 14": {
+                "pros": [
+                    "A15 Bionic chip still performs well",
+                    "Good camera system",
+                    "Reliable iOS experience",
+                    "5 years of software support"
+                ],
+                "cons": [
+                    "Older chip compared to iPhone 15",
+                    "Lightning port instead of USB-C",
+                    "No 48MP camera",
+                    "Considered outdated now"
+                ],
+                "current_trend": "Outdated",
+                "buying_recommendation": "Consider iPhone 15 instead for better value and future-proofing"
+            },
+            "samsung galaxy s24": {
+                "pros": [
+                    "Snapdragon 8 Gen 3 processor for excellent performance",
+                    "6.2-inch Dynamic AMOLED 2X display with 120Hz",
+                    "50 MP main camera with advanced AI features",
+                    "4000 mAh battery with 25W fast charging",
+                    "8GB RAM with UFS 4.0 storage",
+                    "IP68 water resistance and Gorilla Glass Armor",
+                    "7 years of Android updates",
+                    "Expandable storage with microSD"
+                ],
+                "cons": [
+                    "Premium price point",
+                    "Battery life could be better for heavy usage",
+                    "Charger not included in box",
+                    "One UI may not appeal to everyone"
+                ],
+                "current_trend": "Excellent",
+                "buying_recommendation": "Highly recommended for Android users who want flagship performance"
+            },
+            "samsung galaxy s24 ultra": {
+                "pros": [
+                    "Snapdragon 8 Gen 3 processor",
+                    "6.8-inch Dynamic AMOLED 2X display with 120Hz",
+                    "200 MP main camera with 5x optical zoom",
+                    "5000 mAh battery with 45W fast charging",
+                    "S Pen included for productivity",
+                    "Titanium frame for premium feel",
+                    "12GB RAM with up to 1TB storage",
+                    "7 years of Android updates"
+                ],
+                "cons": [
+                    "Very expensive price point",
+                    "Large and heavy design",
+                    "S Pen may not be useful for everyone",
+                    "Charger not included"
+                ],
+                "current_trend": "Excellent",
+                "buying_recommendation": "Best choice for power users who want maximum features and S Pen"
+            },
+            "samsung galaxy s23": {
+                "pros": [
+                    "Snapdragon 8 Gen 2 processor",
+                    "Good camera system",
+                    "Reliable performance",
+                    "Expandable storage"
+                ],
+                "cons": [
+                    "Older chip compared to S24",
+                    "Smaller battery than S24",
+                    "Considered outdated now"
+                ],
+                "current_trend": "Outdated",
+                "buying_recommendation": "Consider S24 for better value and latest features"
+            },
+            
+            # Laptops
+            "macbook air m3": {
+                "pros": [
+                    "Apple M3 chip with excellent performance and efficiency",
+                    "Up to 24GB unified memory",
+                    "Up to 2TB SSD storage with NVMe technology",
+                    "13.6-inch Liquid Retina display with 2560x1664 resolution",
+                    "Up to 18 hours of battery life",
+                    "Lightweight design at 2.7 pounds",
+                    "Silent operation with no fans",
+                    "Premium aluminum construction"
+                ],
+                "cons": [
+                    "Premium price point compared to Windows alternatives",
+                    "Limited port selection (only 2 Thunderbolt ports)",
+                    "No upgradeable components after purchase",
+                    "Limited gaming options due to macOS",
+                    "No touch screen option"
+                ],
+                "current_trend": "Excellent",
+                "buying_recommendation": "Highly recommended for productivity and creative work"
+            },
+            "macbook pro m3": {
+                "pros": [
+                    "Apple M3 Pro/Max chips for exceptional performance",
+                    "Up to 128GB unified memory",
+                    "Up to 8TB SSD storage",
+                    "14-inch or 16-inch Liquid Retina XDR display",
+                    "Up to 22 hours of battery life",
+                    "Active cooling for sustained performance",
+                    "Professional-grade features",
+                    "Excellent for video editing and 3D work"
+                ],
+                "cons": [
+                    "Very expensive price point",
+                    "Heavier than MacBook Air",
+                    "Overkill for basic tasks",
+                    "Limited gaming options"
+                ],
+                "current_trend": "Excellent",
+                "buying_recommendation": "Best for professionals who need maximum performance"
+            },
+            "macbook air m2": {
+                "pros": [
+                    "Apple M2 chip still performs well",
+                    "Good battery life",
+                    "Lightweight design",
+                    "Reliable macOS experience"
+                ],
+                "cons": [
+                    "Older chip compared to M3",
+                    "Smaller display than M3 model",
+                    "Considered outdated now"
+                ],
+                "current_trend": "Outdated",
+                "buying_recommendation": "Consider M3 MacBook Air for better value and performance"
+            },
+            
+            # Headphones
+            "sony wh-1000xm5": {
+                "pros": [
+                    "Industry-leading noise cancellation",
+                    "Excellent sound quality with LDAC support",
+                    "30-hour battery life",
+                    "Comfortable design with premium materials",
+                    "Quick charge (3 minutes = 3 hours)",
+                    "Touch controls and voice assistant support",
+                    "Foldable design for portability"
+                ],
+                "cons": [
+                    "Premium price point",
+                    "No IP rating for water resistance",
+                    "Can get warm during extended use",
+                    "Touch controls can be finicky"
+                ],
+                "current_trend": "Excellent",
+                "buying_recommendation": "Best choice for noise cancellation and sound quality"
+            },
+            "airpods pro 2": {
+                "pros": [
+                    "Excellent active noise cancellation",
+                    "Seamless iOS integration",
+                    "Spatial audio with dynamic head tracking",
+                    "Adaptive transparency mode",
+                    "Up to 6 hours battery life",
+                    "MagSafe charging case",
+                    "IPX4 water resistance"
+                ],
+                "cons": [
+                    "Premium price for earbuds",
+                    "Limited compatibility with non-Apple devices",
+                    "No LDAC or aptX support",
+                    "Battery life shorter than over-ear headphones"
+                ],
+                "current_trend": "Excellent",
+                "buying_recommendation": "Best for iOS users who want premium wireless earbuds"
+            },
+            
+            # Smartwatches
+            "apple watch series 9": {
+                "pros": [
+                    "S9 chip for improved performance",
+                    "Double tap gesture control",
+                    "Always-on display with improved brightness",
+                    "Advanced health monitoring features",
+                    "Seamless iOS integration",
+                    "Up to 18 hours battery life",
+                    "Water resistant to 50m"
+                ],
+                "cons": [
+                    "Premium price point",
+                    "Limited compatibility (iOS only)",
+                    "Daily charging required",
+                    "Small screen size"
+                ],
+                "current_trend": "Excellent",
+                "buying_recommendation": "Best smartwatch for iOS users with comprehensive health features"
+            },
+            "samsung galaxy watch 6": {
+                "pros": [
+                    "Wear OS 4 with improved performance",
+                    "Rotating bezel for easy navigation",
+                    "Advanced health monitoring",
+                    "Good battery life",
+                    "Water resistant",
+                    "Compatible with Android devices"
+                ],
+                "cons": [
+                    "Limited iOS compatibility",
+                    "Premium price",
+                    "Daily charging required",
+                    "Smaller app ecosystem than Apple Watch"
+                ],
+                "current_trend": "Good",
+                "buying_recommendation": "Excellent choice for Android users who want a premium smartwatch"
+            }
+        }
+        
+        # Find the gadget data or use default
+        gadget_lower = gadget.lower()
+        gadget_data = None
+        
+        # Try exact match first
+        if gadget_lower in gadget_database:
+            gadget_data = gadget_database[gadget_lower]
+        else:
+            # Try partial matches
+            for key, data in gadget_database.items():
+                if key in gadget_lower or gadget_lower in key:
+                    gadget_data = data
+                    break
+        
+        if not gadget_data:
+            # Generate intelligent analysis for unknown gadgets
+            gadget_data = generate_intelligent_analysis(gadget, category)
+        
+        # Add trend analysis and recommendations
+        gadget_data["trend_analysis"] = analyze_trends(gadget_lower, gadget_data)
+        gadget_data["newer_alternatives"] = suggest_newer_models(gadget_lower, gadget_data)
+        
+        # Return the analysis results
+        return jsonify({
+            "data": json.dumps(gadget_data),
+            "suggestion": False
+        }), 200
+        
+    except Exception as e:
+        print(f"Error in gadget analysis: {e}")
+        return jsonify({"error": "Failed to analyze gadget. Please try again."}), 500
+
+def generate_intelligent_analysis(gadget, category):
+    """Generate intelligent analysis for unknown gadgets based on category and name patterns"""
+    gadget_lower = gadget.lower()
+    
+    # Determine gadget type from name patterns
+    if any(word in gadget_lower for word in ['iphone', 'samsung', 'galaxy', 'pixel', 'oneplus', 'xiaomi', 'oppo', 'vivo']):
+        gadget_type = 'smartphone'
+    elif any(word in gadget_lower for word in ['macbook', 'laptop', 'dell', 'hp', 'lenovo', 'asus', 'acer']):
+        gadget_type = 'laptop'
+    elif any(word in gadget_lower for word in ['airpods', 'sony', 'bose', 'headphones', 'earbuds']):
+        gadget_type = 'headphones'
+    elif any(word in gadget_lower for word in ['watch', 'fitbit', 'garmin']):
+        gadget_type = 'smartwatch'
+    elif any(word in gadget_lower for word in ['ipad', 'tablet', 'surface']):
+        gadget_type = 'tablet'
+    else:
+        gadget_type = category if category != 'auto' else 'other'
+    
+    # Generate category-specific analysis
+    if gadget_type == 'smartphone':
+        return {
+            "pros": [
+                f"{gadget} likely offers modern smartphone features and capabilities",
+                "Good performance for daily tasks and multitasking",
+                "Decent camera system for photography and video",
+                "Reliable battery life for typical usage patterns",
+                "Regular software updates for security and features",
+                "Compatible with most apps and services"
+            ],
+            "cons": [
+                "May not have the latest processor or cutting-edge features",
+                "Camera quality might be average compared to flagship models",
+                "Battery life could be limited for heavy usage",
+                "May not receive long-term software support",
+                "Build quality might not match premium devices"
+            ],
+            "current_trend": "Good",
+            "buying_recommendation": "Consider this device if it fits your budget and basic needs"
+        }
+    elif gadget_type == 'laptop':
+        return {
+            "pros": [
+                f"{gadget} should provide adequate performance for basic computing tasks",
+                "Good for productivity work like documents and web browsing",
+                "Portable design for work and travel",
+                "Compatible with most software and applications",
+                "Decent battery life for typical usage"
+            ],
+            "cons": [
+                "May struggle with demanding tasks like video editing or gaming",
+                "Limited storage and memory compared to premium models",
+                "Display quality might be average",
+                "Build quality may not be as premium",
+                "May not have the latest connectivity options"
+            ],
+            "current_trend": "Good",
+            "buying_recommendation": "Suitable for basic computing needs and productivity work"
+        }
+    elif gadget_type == 'headphones':
+        return {
+            "pros": [
+                f"{gadget} likely provides good audio quality for music and calls",
+                "Comfortable design for extended listening sessions",
+                "Wireless connectivity for convenience",
+                "Good battery life for daily use",
+                "Compatible with most devices and platforms"
+            ],
+            "cons": [
+                "Audio quality may not match premium headphones",
+                "Noise cancellation might be limited or absent",
+                "Build quality may not be as durable",
+                "Limited advanced features compared to high-end models",
+                "May not have premium materials or design"
+            ],
+            "current_trend": "Good",
+            "buying_recommendation": "Good choice for casual listening and daily use"
+        }
+    else:
+        return {
+            "pros": [
+                f"{gadget} offers competitive features for its category",
+                "Good value for the price point",
+                "Reliable performance for intended use",
+                "Established brand support and warranty",
+                "Compatible with standard accessories and services"
+            ],
+            "cons": [
+                "May lack premium features found in high-end models",
+                "Performance could be limited for demanding tasks",
+                "Build quality might be average",
+                "Limited customization options",
+                "May not have the latest technology or innovations"
+            ],
+            "current_trend": "Good",
+            "buying_recommendation": "Consider this device if it meets your basic requirements and budget"
+        }
+
+def analyze_trends(gadget_lower, gadget_data):
+    """Analyze current market trends for the gadget"""
+    trend = gadget_data.get("current_trend", "Good")
+    
+    if trend == "Excellent":
+        return {
+            "status": "Excellent",
+            "description": "This is currently one of the best options in its category",
+            "recommendation": "Highly recommended for purchase",
+            "market_position": "Leading edge"
+        }
+    elif trend == "Good":
+        return {
+            "status": "Good",
+            "description": "This is a solid choice with good value",
+            "recommendation": "Good choice if it fits your needs",
+            "market_position": "Competitive"
+        }
+    elif trend == "Outdated":
+        return {
+            "status": "Outdated",
+            "description": "This model is older and may not offer the best value",
+            "recommendation": "Consider newer alternatives",
+            "market_position": "Legacy"
+        }
+    else:
+        return {
+            "status": "Unknown",
+            "description": "Limited market data available",
+            "recommendation": "Research further before purchasing",
+            "market_position": "Unknown"
+        }
+
+def suggest_newer_models(gadget_lower, gadget_data):
+    """Suggest newer model alternatives"""
+    suggestions = []
+    
+    # iPhone suggestions
+    if 'iphone' in gadget_lower:
+        if any(year in gadget_lower for year in ['12', '11', '10', '9', '8']):
+            suggestions = [
+                {"name": "iPhone 15 Pro", "reason": "Latest flagship with A17 Pro chip and titanium design"},
+                {"name": "iPhone 15", "reason": "Great value with A16 chip and USB-C"},
+                {"name": "iPhone 14", "reason": "Good option if you want to save money"}
+            ]
+    
+    # Samsung suggestions
+    elif 'samsung' in gadget_lower or 'galaxy' in gadget_lower:
+        if any(model in gadget_lower for model in ['s21', 's20', 'note 20', 'note 10']):
+            suggestions = [
+                {"name": "Galaxy S24 Ultra", "reason": "Latest flagship with S Pen and titanium frame"},
+                {"name": "Galaxy S24+", "reason": "Excellent performance with large display"},
+                {"name": "Galaxy S24", "reason": "Great value with latest features"}
+            ]
+    
+    # MacBook suggestions
+    elif 'macbook' in gadget_lower:
+        if 'm2' in gadget_lower or 'm1' in gadget_lower:
+            suggestions = [
+                {"name": "MacBook Air M3", "reason": "Latest M3 chip with excellent performance"},
+                {"name": "MacBook Pro M3", "reason": "Professional performance with advanced features"}
+            ]
+    
+    # Generic suggestions
+    if not suggestions:
+        suggestions = [
+            {"name": "Research latest models", "reason": "Check manufacturer websites for newest releases"},
+            {"name": "Compare prices", "reason": "Look for deals on current generation devices"},
+            {"name": "Consider alternatives", "reason": "Explore other brands in the same category"}
+        ]
+    
+    return suggestions
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,5 +1,5 @@
-{% extends 'base.html' %}
-{% block title %}College Admission Advisor | AI Decision Platform{% endblock %}
+{% extends "base.html" %}
+
 {% block content %}
 <style>
     .result-table {
@@ -317,7 +317,7 @@
                             <span style="color: #2e7d32; font-weight: 600;">EWS</span> 10%
                         </div>
                     </div>
-                    <div style="background: #e3f2fd; padding: 8px; border-radius: 6px; border-left: 3px solid #2196f3;">
+                    <div style="background: #e3f2fd; padding: 8px; border-radius: 6px; border-left: 3px solid #2196f3; margin-bottom: 8px;">
                         <div style="color: #1976d2; font-weight: 600; margin-bottom: 4px;">🏫 Popular:</div>
                         <div style="color: #1976d2; font-size: 12px;">
                             <span style="color: #1565c0; font-weight: 600;">Engineering</span> CSE/ECE | 
@@ -572,4 +572,19 @@
     </div>
     {% endif %}
 </div>
+    <script>
+        // JavaScript code for form handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('admissionForm');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    loading.style.display = 'block';
+                    results.style.display = 'none';
+                });
+            }
+        });
+    </script>
 {% endblock %} 
